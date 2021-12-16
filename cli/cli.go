@@ -21,6 +21,10 @@ func main() {
 				Usage: "the location of the sitemap to download",
 			},
 			&cli.BoolFlag{
+				Name:  "paged",
+				Usage: "Whether to use the paged version, rather than assuming there will be one page.",
+			},
+			&cli.BoolFlag{
 				Name:  "verbose",
 				Usage: "Whether to print a description of the sitemap, if the command succeeds.",
 			},
@@ -31,7 +35,14 @@ func main() {
 			}
 			url := c.String("url")
 			v := c.Bool("verbose")
-			s, err := sitemaps.GetSitemapFromURL(url)
+			p := c.Bool("paged")
+			var s *sitemaps.Sitemap
+			var err error
+			if p {
+				s, err = sitemaps.GetSitemapFromURL(url)
+			} else {
+				s, err = sitemaps.GetPagedSitemapFromURL(url)
+			}
 			if err != nil {
 				return err
 			}

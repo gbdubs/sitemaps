@@ -43,6 +43,28 @@ func getSitemapFromURL(url string) (*Sitemap, error) {
 	return sitemap, nil
 }
 
+func getPagedSitemapFromURL(url string) (*Sitemap, error) {
+	sitemap := &Sitemap{
+		URL:         url,
+		LastUpdated: make(map[string]time.Time),
+	}
+	page := 1
+	for {
+		s, e := getSitemapFromURL(fmt.Sprintf("%s?page=%d", url, page))
+		page++
+		if e != nil {
+			return sitemap, e
+		}
+		if len(s.LastUpdated) == 0 {
+			return sitemap, nil
+		}
+		sitemap.Attribution = s.Attribution
+		for k, v := range s.LastUpdated {
+			sitemap.LastUpdated[k] = v
+		}
+	}
+}
+
 func sitemapMemoizationKey(url string) string {
 	key := strings.ReplaceAll(url, "/", " ")
 	key = strings.ReplaceAll(key, "www.", "")
@@ -72,7 +94,7 @@ func (s *urlSet) lastUpdatedMap() (map[string]time.Time, error) {
 	for _, u := range s.URLs {
 		var t time.Time
 		if u.LastModified != "" {
-			tt, err := time.Parse(time.RFC3339, u.LastModified)
+			tt, err := parseTime(u.LastModified)
 			if err != nil {
 				return m, err
 			}
@@ -81,4 +103,19 @@ func (s *urlSet) lastUpdatedMap() (map[string]time.Time, error) {
 		m[u.Location] = t
 	}
 	return m, nil
+}
+
+// Add more time formats here as we go along.
+var timeFormats = [...]string{time.RFC3339, time.RFC3339Nano, "2006-01-02T15:04Z"}
+
+func parseTime(s string) (time.Time, error) {
+	var err error
+	for _, f := range timeFormats {
+		t, e := time.Parse(f, s)
+		if e == nil {
+			return t, nil
+		}
+		err = e
+	}
+	return time.Time{}, err
 }

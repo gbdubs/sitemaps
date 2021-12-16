@@ -16,6 +16,10 @@ func GetSitemapFromURL(url string) (*Sitemap, error) {
 	return getSitemapFromURL(url)
 }
 
+func GetPagedSitemapFromURL(url string) (*Sitemap, error) {
+	return getPagedSitemapFromURL(url)
+}
+
 func (s *Sitemap) BestFuzzyMatch(target string) (string, int) {
 	return s.bestFuzzyMatch(target)
 }
