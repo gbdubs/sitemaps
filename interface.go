@@ -19,3 +19,7 @@ func GetSitemapFromURL(url string) (*Sitemap, error) {
 func (s *Sitemap) BestFuzzyMatch(target string) (string, int) {
 	return s.bestFuzzyMatch(target)
 }
+
+func (s *Sitemap) MemoPath() string {
+	return "/memo/sitemap/" + sitemapMemoizationKey(s.URL) + ".xml"
+}
